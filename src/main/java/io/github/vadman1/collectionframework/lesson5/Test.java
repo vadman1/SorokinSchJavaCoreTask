@@ -1,4 +1,4 @@
-package io.github.vadman1.CollectionFramework.lesson5;
+package io.github.vadman1.collectionframework.lesson5;
 
 import java.util.HashMap;
 import java.util.Map;

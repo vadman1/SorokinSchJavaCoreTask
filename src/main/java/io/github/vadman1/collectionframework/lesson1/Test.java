@@ -1,4 +1,4 @@
-package io.github.vadman1.CollectionFramework.lesson1;
+package io.github.vadman1.collectionframework.lesson1;
 
 public class Test {
     public static void main(String[] args) {

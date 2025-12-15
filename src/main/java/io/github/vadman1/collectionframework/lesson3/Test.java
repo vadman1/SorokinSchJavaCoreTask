@@ -1,4 +1,4 @@
-package io.github.vadman1.CollectionFramework.lesson3;
+package io.github.vadman1.collectionframework.lesson3;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package io.github.vadman1.CollectionFramework.lesson2;
+package io.github.vadman1.collectionframework.lesson2;
 
 import java.util.LinkedList;
 
