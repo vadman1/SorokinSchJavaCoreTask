@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Main {
 
@@ -86,18 +87,14 @@ public class Main {
         List<Customer> customers = List.of(customer1, customer2, customer3, customer4, customer5);
 
         // Задание 1
-        List<Product> booksWithPriceMore100 = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
-                .flatMap(order -> order.getProducts().stream())
-                .filter(product -> "Books".equals(product.getCategory()))
+        List<Product> booksWithPriceMore100 = getProductStreamByCategory(customers, "Books")
                 .distinct()
                 .filter(product -> product.getPrice().compareTo(BigDecimal.valueOf(100)) > 0)
                 .toList();
         System.out.println("Продукты из категории \"Books\" с ценой более 100:\n" + booksWithPriceMore100 + "\n");
 
         // Задание 2
-        List<Order> childrenProducts = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
+        List<Order> childrenProducts = getOrderStream(customers)
                 .distinct()
                 .filter(order -> order.getProducts().stream()
                         .anyMatch(product -> "Children's products".equals(product.getCategory())))
@@ -105,11 +102,7 @@ public class Main {
         System.out.println("Список заказов с продуктами из категории \"Children's products\":\n" + childrenProducts + "\n");
 
         // Задание 3
-        BigDecimal sumToysWithDiscount10Percent = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
-                .flatMap(order -> order.getProducts().stream())
-                .distinct()
-                .filter(product -> "Toys".equals(product.getCategory()))
+        BigDecimal sumToysWithDiscount10Percent = getProductStreamByCategory(customers, "Toys")
                 .map(product -> product.getPrice().multiply(BigDecimal.valueOf(0.9)))
                 .reduce(BigDecimal::add)
                 .orElse(BigDecimal.valueOf(0));
@@ -131,19 +124,15 @@ public class Main {
                 + productsClientTwoLevelAndOrderDateBetween + "\n");
 
         // Задание 5
-        List<Product> topTwoCheapProduct = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
-                .flatMap(order -> order.getProducts().stream())
+        List<Product> topTwoCheapProduct = getProductStreamByCategory(customers, "Books")
                 .distinct()
-                .filter(product -> "Books".equals(product.getCategory()))
                 .sorted(Comparator.comparing(Product::getPrice))
                 .limit(2)
                 .toList();
         System.out.println("Топ 2 самые дешёвые книг:\n" + topTwoCheapProduct + "\n");
 
         // Задание 6
-        List<Order> threeLastOrders = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
+        List<Order> threeLastOrders = getOrderStream(customers)
                 .sorted(Comparator.comparing(Order::getOrderDate).reversed())
                 .limit(3)
                 .toList();
@@ -151,8 +140,7 @@ public class Main {
 
         // Задание 7
         System.out.println("id заказов, сделанных 15-марта-2021:\n");
-        List<Product> products15March2021 = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
+        List<Product> products15March2021 = getOrderStream(customers)
                 .filter(order -> order.getOrderDate().isEqual(LocalDate.of(2021, 3, 15)))
                 .peek(order -> System.out.println(order.getId()))
                 .flatMap(order -> order.getProducts().stream())
@@ -161,8 +149,7 @@ public class Main {
         System.out.println("Список заказов, сделанных 15-марта-2021:\n" + products15March2021 + "\n");
 
         // Задание 8
-        BigDecimal sumOrdersFebruary2021 = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
+        BigDecimal sumOrdersFebruary2021 = getOrderStream(customers)
                 .filter(order -> {
                     LocalDate orderDate = order.getOrderDate();
                     return orderDate.isAfter(LocalDate.of(2021, 2, 1))
@@ -175,8 +162,7 @@ public class Main {
         System.out.println("Общая сумма всех заказов, сделанных в феврале 2021:\n" + sumOrdersFebruary2021 + "\n");
 
         // Задание 9
-        double averageSumOrder14March2021 = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
+        double averageSumOrder14March2021 = getOrderStream(customers)
                 .filter(order -> order.getOrderDate().isEqual(LocalDate.of(2021, 3, 14)))
                 .flatMap(order -> order.getProducts().stream())
                 .map(Product::getPrice)
@@ -187,55 +173,39 @@ public class Main {
 
         // Задание 10
         System.out.println("Набор статистических данных продуктов категории \"Книги\"");
-        double sumBooks = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
-                .flatMap(order -> order.getProducts().stream())
-                .filter(product -> "Books".equals(product.getCategory()))
+        double sumBooks = getProductStreamByCategory(customers, "Books")
                 .map(Product::getPrice)
                 .mapToDouble(BigDecimal::doubleValue)
                 .sum();
         System.out.println("Сумма: " + sumBooks);
 
-        double averagePriceBooks = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
-                .flatMap(order -> order.getProducts().stream())
-                .filter(product -> "Books".equals(product.getCategory()))
+        double averagePriceBooks = getProductStreamByCategory(customers, "Books")
                 .map(Product::getPrice)
                 .mapToDouble(BigDecimal::doubleValue)
                 .average()
                 .orElse(0.0);
         System.out.println("Средняя цена: " + averagePriceBooks);
 
-        double maxPriceBooks = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
-                .flatMap(order -> order.getProducts().stream())
-                .filter(product -> "Books".equals(product.getCategory()))
+        double maxPriceBooks = getProductStreamByCategory(customers, "Books")
                 .map(Product::getPrice)
                 .mapToDouble(BigDecimal::doubleValue)
                 .max()
                 .orElse(0.0);
         System.out.println("Максимальная цена: " + maxPriceBooks);
 
-        double minPriceBooks = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
-                .flatMap(order -> order.getProducts().stream())
-                .filter(product -> "Books".equals(product.getCategory()))
+        double minPriceBooks = getProductStreamByCategory(customers, "Books")
                 .map(Product::getPrice)
                 .mapToDouble(BigDecimal::doubleValue)
                 .min()
                 .orElse(0.0);
         System.out.println("Минимальная цена: " + minPriceBooks);
 
-        long countBooks = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
-                .flatMap(order -> order.getProducts().stream())
-                .filter(product -> "Books".equals(product.getCategory()))
+        long countBooks = getProductStreamByCategory(customers, "Books")
                 .count();
         System.out.println("Количество: " + countBooks + "\n");
 
         // Задание 11
-        Map<Long, Integer> ordersIdAndProductCount = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
+        Map<Long, Integer> ordersIdAndProductCount = getOrderStream(customers)
                 .collect(Collectors.toMap(
                         Order::getId,
                         order -> order.getProducts().size(),
@@ -254,8 +224,7 @@ public class Main {
                 + customersWithOrdersMap + "\n");
 
         // Задание 13
-        Map<Order, Double> ordersWithSumMap = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
+        Map<Order, Double> ordersWithSumMap = getOrderStream(customers)
                 .collect(Collectors.toMap(
                         order -> order,
                         order -> order.getProducts().stream()
@@ -268,9 +237,7 @@ public class Main {
                 + ordersWithSumMap + "\n");
 
         // Задание 14
-        Map<String, List<String>> categoriesWithProductsMap = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
-                .flatMap(order -> order.getProducts().stream())
+        Map<String, List<String>> categoriesWithProductsMap = getProductStream(customers)
                 .distinct()
                 .collect(Collectors.groupingBy(
                         Product::getCategory,
@@ -280,9 +247,7 @@ public class Main {
                 + categoriesWithProductsMap + "\n");
 
         // Задание 15
-        Map<String, Product> categoriesWithMostExpensiveProductMap = customers.stream()
-                .flatMap(customer -> customer.getOrders().stream())
-                .flatMap(order -> order.getProducts().stream())
+        Map<String, Product> categoriesWithMostExpensiveProductMap = getProductStream(customers)
                 .distinct()
                 .collect(Collectors.groupingBy(
                         Product::getCategory,
@@ -295,6 +260,21 @@ public class Main {
                 ));
         System.out.println("Map<String, Product> → самый дорогой продукт по каждой категории:\n"
                 + categoriesWithMostExpensiveProductMap + "\n");
+    }
+
+    private static Stream<Product> getProductStreamByCategory(List<Customer> customers, String category) {
+        return getProductStream(customers)
+                .filter(product -> category.equals(product.getCategory()));
+    }
+
+    private static Stream<Order> getOrderStream(List<Customer> customers) {
+        return customers.stream()
+                .flatMap(customer -> customer.getOrders().stream());
+    }
+    
+    private static Stream<Product> getProductStream(List<Customer> customers) {
+        return getOrderStream(customers)
+                .flatMap(order -> order.getProducts().stream());
     }
 
     static Set<Order> generateOrders(
